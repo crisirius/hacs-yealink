@@ -7,6 +7,8 @@ Monitor-Prozess.
 
 ## Funktionen
 
+- **Einrichtung:** IP-Adresse manuell eingeben oder das lokale Netzwerk
+  automatisch durchsuchen; zusätzlich DHCP-Erkennung
 - **Status:** online/offline, im Gespräch, Anrufstatus
 - **Gerät:** Firmware, Hardware, MAC, IP-Adresse
 - **WLAN:** SSID und Signalstärke
@@ -43,9 +45,21 @@ Assistant neu starten.
 
 ## Einrichtung
 
+Beim Hinzufügen der Integration stehen zwei Wege zur Auswahl:
+
+1. **IP-Adresse manuell eingeben** – Host, Benutzername und Passwort eintragen.
+2. **Lokales Netzwerk durchsuchen** – die Integration sucht Yealink-Telefone
+   im lokalen Netz, zeigt die Treffer zur Auswahl an und fragt danach nur noch
+   die Zugangsdaten ab.
+
+Zusätzlich erkennt Home Assistant ein Telefon automatisch per DHCP, sobald es
+mit dem MAC-Präfix `80:5E:0C` im Netz erscheint. Dann erscheint das Gerät als
+neuer Fund unter **Einstellungen → Geräte & Dienste** und muss nur noch
+bestätigt werden.
+
 | Feld | Bedeutung |
 |---|---|
-| Host oder IP-Adresse | z. B. `172.20.1.130` |
+| Host oder IP-Adresse | nur bei manueller Einrichtung, z. B. `172.20.1.130` |
 | Benutzername | meist `admin` |
 | Passwort | Web-Passwort des Telefons |
 | TLS-Zertifikat prüfen | standardmäßig aus (Yealink nutzt ein selbstsigniertes Zertifikat) |
@@ -58,6 +72,23 @@ Assistant neu starten.
 Nach dem Speichern wird das Gerät samt Entities angelegt. Die Zugangsdaten
 liegen in der HA-Konfigurationsdatenbank (`.storage/core.config_entries`),
 nicht in einer Klartextdatei im Repo.
+
+### Automatische Netzwerksuche
+
+Die Suche prüft HTTPS (Port 443) auf allen Hosts der privaten `/24`-Netze, die
+Home Assistant an seinen physischen Netzwerkadaptern sieht (maximal vier
+Netze). Ein Treffer wird über den Seitentitel des Webinterface erkannt
+(`Yealink T54W Phone`), es werden keine Zugangsdaten benötigt.
+
+- Virtuelle Adapter (Docker-Bridge, `veth`, `virbr`, `vmnet`, `utun`, …)
+  werden übersprungen.
+- Bei größeren Subnetzen (`/16`–`/23`) werden höchstens vier `/24`-Netze
+  geprüft; bei sehr großen Netzen nur das `/24` der eigenen Adresse.
+- **Home Assistant Container/Docker:** Die Suche funktioniert nur mit
+  Host-Netzwerk (`network_mode: host`). Mit Bridge-Netzwerk ist das LAN des
+  Telefons nicht erreichbar – dann die IP-Adresse manuell eintragen.
+- Wird nichts gefunden, bricht der Dialog mit einem Hinweis ab; die manuelle
+  Einrichtung bleibt verfügbar.
 
 ### Optionen ändern
 
@@ -161,6 +192,8 @@ IP manuell im Telefon-Webinterface eintragen.
 - Getestet mit T54W / `96.87.0.15`; andere T5x-Modelle können abweichen.
 - Headset-Erkennung benötigt Syslog (UDP, unverschlüsselt).
 - Die Anrufliste wird nur als „letzter Anruf“ exportiert (v0.1).
+- Die Netzwerksuche erreicht nur direkt angeschlossene private Netze; sie
+  durchsucht keine fremden Subnetze und keine öffentlichen Adressen.
 - Das Telefon nutzt standardmäßig ein selbstsigniertes TLS-Zertifikat.
   Zertifikatsprüfung daher nur aktivieren, wenn das Zertifikat bekannt ist.
 - Nach einem Werksreset oder Passwortwechsel meldet sich die Integration über
@@ -187,6 +220,8 @@ Syslog-Einstellungen:
 |---|---|
 | `invalid_auth` | Benutzername/Passwort falsch oder Web-Login deaktiviert |
 | `cannot_connect` | IP/Port prüfen, HTTPS am Telefon aktiv, LAN erreichbar |
+| Netzwerksuche findet nichts | anderes Subnetz, Docker-Bridge oder Firewall; IP manuell eintragen |
+| Telefon wird nicht per DHCP erkannt | MAC-Präfix prüfen oder Telefon manuell hinzufügen |
 | Dial endet mit `ret: failed` | Action-URI-Allowlist prüfen (siehe oben) |
 | Headset-Entities fehlen | Syslog deaktiviert, Port belegt oder UDP blockiert |
 | Headset bleibt „unbekannt“ | Telefon sendet kein Syslog an HA; Port/Firewall prüfen |
@@ -208,10 +243,12 @@ custom_components/yealink_t54w/
 ├── __init__.py        Setup, Services, Syslog-Konfiguration
 ├── api.py             Web-API-Client (nur Standardbibliothek)
 ├── binary_sensor.py   Online, Im Gespräch, Leitung, Headset
+├── brand/             Icon für Home Assistant
 ├── button.py          Auflegen, Neustart
 ├── config_flow.py     Einrichtung, Reauth, Optionen
 ├── const.py           Konstanten
 ├── coordinator.py     Polling + automatischer Re-Login
+├── discovery.py       Netzwerksuche nach Yealink-Telefonen
 ├── entity.py          gemeinsame Gerätezuordnung
 ├── manifest.json
 ├── sensor.py          Status, Gerät, WLAN, Anrufliste, Headset
@@ -237,7 +274,7 @@ HACS erkennt Updates über GitHub-Releases. Vor dem Push die Version in
 und ein Release anlegen:
 
 ```bash
-git tag v0.1.0
+git tag v0.2.0
 git push origin main --tags
 ```
 

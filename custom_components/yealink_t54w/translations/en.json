@@ -3,9 +3,38 @@
     "step": {
       "user": {
         "title": "Connect a Yealink phone",
-        "description": "Enter the web interface credentials of the phone. The account needs administrator rights.",
+        "description": "Choose how you want to find the phone.",
+        "menu_options": {
+          "manual": "Enter the IP address manually",
+          "scan": "Search the local network"
+        }
+      },
+      "manual": {
+        "title": "Connect a Yealink phone",
+        "description": "Enter the phone's IP address and the credentials of its web interface. The account needs administrator rights.",
         "data": {
           "host": "Host or IP address",
+          "username": "Username",
+          "password": "Password",
+          "verify_tls": "Verify the TLS certificate",
+          "scan_interval": "Poll interval",
+          "enable_call_control": "Enable call control (dial, hang up)",
+          "enable_headset": "Detect the Bluetooth headset via syslog",
+          "syslog_port": "Syslog UDP port",
+          "configure_syslog": "Point the phone's syslog at Home Assistant"
+        }
+      },
+      "scan": {
+        "title": "Phones found",
+        "description": "{count} Yealink phone(s) found. Select the one you want to add.",
+        "data": {
+          "host": "Phone"
+        }
+      },
+      "credentials": {
+        "title": "Phone credentials",
+        "description": "Enter the web interface credentials for {model} at {host}. The account needs administrator rights.",
+        "data": {
           "username": "Username",
           "password": "Password",
           "verify_tls": "Verify the TLS certificate",
@@ -31,8 +60,12 @@
     },
     "abort": {
       "already_configured": "This phone is already configured.",
+      "already_in_progress": "The setup for this phone is already in progress.",
       "reauth_successful": "Login renewed successfully.",
-      "reauth_failed": "The config entry no longer exists."
+      "reauth_failed": "The config entry no longer exists.",
+      "no_devices_found": "No Yealink phone was found on the local network. Add it manually instead.",
+      "no_network": "No suitable local network was found. Add the phone manually.",
+      "scan_failed": "The network scan failed. Add the phone manually."
     }
   },
   "options": {

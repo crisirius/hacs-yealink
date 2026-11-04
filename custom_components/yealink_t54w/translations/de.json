@@ -3,9 +3,38 @@
     "step": {
       "user": {
         "title": "Yealink-Telefon verbinden",
-        "description": "Zugangsdaten des Telefon-Webinterface eingeben. Der Benutzer braucht Administratorrechte.",
+        "description": "Wähle, wie das Telefon gefunden werden soll.",
+        "menu_options": {
+          "manual": "IP-Adresse manuell eingeben",
+          "scan": "Lokales Netzwerk durchsuchen"
+        }
+      },
+      "manual": {
+        "title": "Yealink-Telefon verbinden",
+        "description": "IP-Adresse und Zugangsdaten des Telefon-Webinterface eingeben. Der Benutzer braucht Administratorrechte.",
         "data": {
           "host": "Host oder IP-Adresse",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_tls": "TLS-Zertifikat prüfen",
+          "scan_interval": "Abfrageintervall",
+          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_headset": "Bluetooth-Headset per Syslog erkennen",
+          "syslog_port": "Syslog-UDP-Port",
+          "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"
+        }
+      },
+      "scan": {
+        "title": "Gefundene Telefone",
+        "description": "{count} Yealink-Telefon(e) gefunden. Wähle das Gerät aus, das hinzugefügt werden soll.",
+        "data": {
+          "host": "Telefon"
+        }
+      },
+      "credentials": {
+        "title": "Telefon-Zugangsdaten",
+        "description": "Zugangsdaten des Webinterface für {model} unter {host} eingeben. Der Benutzer braucht Administratorrechte.",
+        "data": {
           "username": "Benutzername",
           "password": "Passwort",
           "verify_tls": "TLS-Zertifikat prüfen",
@@ -31,8 +60,12 @@
     },
     "abort": {
       "already_configured": "Dieses Telefon ist bereits eingerichtet.",
+      "already_in_progress": "Die Einrichtung für dieses Telefon läuft bereits.",
       "reauth_successful": "Anmeldung erfolgreich erneuert.",
-      "reauth_failed": "Der Konfigurationseintrag existiert nicht mehr."
+      "reauth_failed": "Der Konfigurationseintrag existiert nicht mehr.",
+      "no_devices_found": "Im lokalen Netzwerk wurde kein Yealink-Telefon gefunden. Füge es stattdessen manuell hinzu.",
+      "no_network": "Kein passendes lokales Netzwerk gefunden. Füge das Telefon manuell hinzu.",
+      "scan_failed": "Die Netzwerksuche ist fehlgeschlagen. Füge das Telefon manuell hinzu."
     }
   },
   "options": {
