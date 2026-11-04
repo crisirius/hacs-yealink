@@ -21,7 +21,6 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
-    SelectOption,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -105,8 +104,7 @@ def _phone_selector(phones: list[DiscoveredPhone]) -> SelectSelector:
     return SelectSelector(
         SelectSelectorConfig(
             options=[
-                SelectOption(value=phone.host, label=f"{phone.model} ({phone.host})")
-                for phone in phones
+                str(phone.host) for phone in sorted(phones, key=lambda p: p.host)
             ],
             mode=SelectSelectorMode.LIST,
         )
