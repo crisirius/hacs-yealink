@@ -274,7 +274,7 @@ HACS erkennt Updates über GitHub-Releases. Vor dem Push die Version in
 und ein Release anlegen:
 
 ```bash
-git tag v0.2.0
+git tag v0.2.1
 git push origin main --tags
 ```
 
