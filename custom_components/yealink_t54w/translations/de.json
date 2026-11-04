@@ -1,0 +1,129 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Yealink-Telefon verbinden",
+        "description": "Zugangsdaten des Telefon-Webinterface eingeben. Der Benutzer braucht Administratorrechte.",
+        "data": {
+          "host": "Host oder IP-Adresse",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_tls": "TLS-Zertifikat prüfen",
+          "scan_interval": "Abfrageintervall",
+          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_headset": "Bluetooth-Headset per Syslog erkennen",
+          "syslog_port": "Syslog-UDP-Port",
+          "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Telefon-Anmeldung erneuern",
+        "description": "Die Anmeldung für {host} ist nicht mehr gültig. Aktuelles Passwort eingeben.",
+        "data": {
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum Telefon fehlgeschlagen.",
+      "invalid_auth": "Benutzername oder Passwort falsch.",
+      "unknown": "Unerwarteter Fehler."
+    },
+    "abort": {
+      "already_configured": "Dieses Telefon ist bereits eingerichtet.",
+      "reauth_successful": "Anmeldung erfolgreich erneuert.",
+      "reauth_failed": "Der Konfigurationseintrag existiert nicht mehr."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Yealink-Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall",
+          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_headset": "Bluetooth-Headset per Syslog erkennen",
+          "syslog_port": "Syslog-UDP-Port",
+          "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Anrufstatus",
+        "state": {
+          "idle": "Bereit",
+          "in_call": "Im Gespräch"
+        }
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "ip_address": {
+        "name": "IP-Adresse"
+      },
+      "wifi_ssid": {
+        "name": "WLAN-SSID"
+      },
+      "wifi_signal": {
+        "name": "WLAN-Signal"
+      },
+      "last_poll": {
+        "name": "Letzte Abfrage"
+      },
+      "last_call": {
+        "name": "Letzter Anruf"
+      },
+      "headset_name": {
+        "name": "Headset"
+      },
+      "headset_mac": {
+        "name": "Headset-MAC-Adresse"
+      },
+      "account_status": {
+        "name": "{account} Status"
+      },
+      "account_number": {
+        "name": "{account} Nummer"
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      },
+      "talking": {
+        "name": "Im Gespräch"
+      },
+      "account_registered": {
+        "name": "{account} registriert"
+      },
+      "headset_connected": {
+        "name": "Headset verbunden"
+      }
+    },
+    "button": {
+      "hangup": {
+        "name": "Auflegen"
+      },
+      "reboot": {
+        "name": "Neustart"
+      }
+    }
+  },
+  "services": {
+    "dial": {
+      "name": "Wählen",
+      "description": "Startet einen Anruf auf dem Telefon."
+    },
+    "hangup": {
+      "name": "Auflegen",
+      "description": "Beendet das aktuelle Gespräch."
+    },
+    "reboot": {
+      "name": "Neustart",
+      "description": "Startet das Telefon neu."
+    }
+  }
+}

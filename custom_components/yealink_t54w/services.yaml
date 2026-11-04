@@ -1,0 +1,45 @@
+dial:
+  name: Dial
+  description: Start a call on the phone.
+  fields:
+    number:
+      name: Number
+      description: Number to dial.
+      required: true
+      example: "+491701234567"
+      selector:
+        text:
+    account:
+      name: Account
+      description: Account ID (for example "1") or "Auto".
+      default: Auto
+      selector:
+        text:
+    entry_id:
+      name: Phone
+      description: Only needed when more than one phone is configured.
+      selector:
+        config_entry:
+          integration: yealink_t54w
+
+hangup:
+  name: Hang up
+  description: End the current call.
+  fields:
+    entry_id:
+      name: Phone
+      description: Only needed when more than one phone is configured.
+      selector:
+        config_entry:
+          integration: yealink_t54w
+
+reboot:
+  name: Reboot
+  description: Reboot the phone. It will be offline for about a minute.
+  fields:
+    entry_id:
+      name: Phone
+      description: Only needed when more than one phone is configured.
+      selector:
+        config_entry:
+          integration: yealink_t54w

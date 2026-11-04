@@ -1,0 +1,129 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect a Yealink phone",
+        "description": "Enter the web interface credentials of the phone. The account needs administrator rights.",
+        "data": {
+          "host": "Host or IP address",
+          "username": "Username",
+          "password": "Password",
+          "verify_tls": "Verify the TLS certificate",
+          "scan_interval": "Poll interval",
+          "enable_call_control": "Enable call control (dial, hang up)",
+          "enable_headset": "Detect the Bluetooth headset via syslog",
+          "syslog_port": "Syslog UDP port",
+          "configure_syslog": "Point the phone's syslog at Home Assistant"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Renew the phone login",
+        "description": "The login for {host} is no longer valid. Enter the current password.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the phone.",
+      "invalid_auth": "Invalid username or password.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This phone is already configured.",
+      "reauth_successful": "Login renewed successfully.",
+      "reauth_failed": "The config entry no longer exists."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Yealink phone options",
+        "data": {
+          "scan_interval": "Poll interval",
+          "enable_call_control": "Enable call control (dial, hang up)",
+          "enable_headset": "Detect the Bluetooth headset via syslog",
+          "syslog_port": "Syslog UDP port",
+          "configure_syslog": "Point the phone's syslog at Home Assistant"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Call status",
+        "state": {
+          "idle": "Idle",
+          "in_call": "In call"
+        }
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "ip_address": {
+        "name": "IP address"
+      },
+      "wifi_ssid": {
+        "name": "Wi-Fi SSID"
+      },
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      },
+      "last_poll": {
+        "name": "Last poll"
+      },
+      "last_call": {
+        "name": "Last call"
+      },
+      "headset_name": {
+        "name": "Headset"
+      },
+      "headset_mac": {
+        "name": "Headset MAC address"
+      },
+      "account_status": {
+        "name": "{account} status"
+      },
+      "account_number": {
+        "name": "{account} number"
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      },
+      "talking": {
+        "name": "In call"
+      },
+      "account_registered": {
+        "name": "{account} registered"
+      },
+      "headset_connected": {
+        "name": "Headset connected"
+      }
+    },
+    "button": {
+      "hangup": {
+        "name": "Hang up"
+      },
+      "reboot": {
+        "name": "Restart"
+      }
+    }
+  },
+  "services": {
+    "dial": {
+      "name": "Dial",
+      "description": "Start a call on the phone."
+    },
+    "hangup": {
+      "name": "Hang up",
+      "description": "End the current call."
+    },
+    "reboot": {
+      "name": "Reboot",
+      "description": "Reboot the phone."
+    }
+  }
+}
