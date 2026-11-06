@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import http.cookiejar
 import json
-import os
 import random
 import ssl
 import urllib.error
@@ -82,16 +81,25 @@ class Yealink:
         self.base = f"{scheme}://{host}"
         self.timeout = timeout
 
+        self.verify_tls = verify_tls
         self.csrf_token: str | None = None
         self._jar = http.cookiejar.CookieJar()
-        ctx = ssl.create_default_context()
-        if not verify_tls:
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-        self._opener = urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=ctx),
-            urllib.request.HTTPCookieProcessor(self._jar),
-        )
+        # Built lazily: creating the SSL context reads the CA bundle from disk,
+        # which blocks and must not happen on the event loop.
+        self._opener: urllib.request.OpenerDirector | None = None
+
+    def _get_opener(self) -> urllib.request.OpenerDirector:
+        """Return the HTTP opener, creating it on first use."""
+        if self._opener is None:
+            ctx = ssl.create_default_context()
+            if not self.verify_tls:
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+            self._opener = urllib.request.build_opener(
+                urllib.request.HTTPSHandler(context=ctx),
+                urllib.request.HTTPCookieProcessor(self._jar),
+            )
+        return self._opener
 
     # ---------------------------------------------------------------- low level
 
@@ -129,7 +137,7 @@ class Yealink:
         req = urllib.request.Request(url, data=body, headers=headers, method=method)
         status = 200
         try:
-            with self._opener.open(req, timeout=self.timeout) as resp:
+            with self._get_opener().open(req, timeout=self.timeout) as resp:
                 raw = resp.read().decode("utf-8", "replace")
         except urllib.error.HTTPError as exc:
             status = exc.code
@@ -221,47 +229,6 @@ class Yealink:
         except YealinkError:
             return False
 
-    # ------------------------------------------------------------- session cache
-
-    def save_session(self, path: str) -> None:
-        """Persist cookies so a restart can reuse the session (chmod 600)."""
-        data = {cookie.name: cookie.value for cookie in self._jar}
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w") as fh:
-            json.dump(data, fh)
-
-    def load_session(self, path: str) -> bool:
-        try:
-            with open(path) as fh:
-                data = json.load(fh)
-        except (OSError, json.JSONDecodeError):
-            return False
-        for name, value in data.items():
-            self._jar.set_cookie(
-                http.cookiejar.Cookie(
-                    version=0,
-                    name=name,
-                    value=value,
-                    port=None,
-                    port_specified=False,
-                    domain=self.host,
-                    domain_specified=False,
-                    domain_initial_dot=False,
-                    path="/",
-                    path_specified=True,
-                    secure=True,
-                    expires=None,
-                    discard=True,
-                    comment=None,
-                    comment_url=None,
-                    rest={},
-                )
-            )
-        if not self.is_logged_in():
-            return False
-        self._load_token()
-        return True
-
     # --------------------------------------------------------------- read API
 
     def info(self, idlist: list[str] | None = None) -> dict:
@@ -335,6 +302,20 @@ class Yealink:
         if "any" in (entry.lower() for entry in allowed) or ip in allowed:
             return False
         allowed.append(ip)
+        self.write_config(
+            {"AURILimitIP": ",".join(allowed)}, page="FeaturesRemoteControl"
+        )
+        return True
+
+    def remove_action_uri_ip(self, ip: str) -> bool:
+        """Drop ``ip`` from the Action URI allow list again.
+
+        Returns True when the list was changed.  ``any`` is left untouched.
+        """
+        allowed = self.action_uri_allow_list()
+        if ip not in allowed:
+            return False
+        allowed.remove(ip)
         self.write_config(
             {"AURILimitIP": ",".join(allowed)}, page="FeaturesRemoteControl"
         )

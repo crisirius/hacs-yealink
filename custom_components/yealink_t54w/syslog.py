@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import socket
 import threading
 from typing import TYPE_CHECKING, Any
 
@@ -30,20 +31,29 @@ _BT_DEVICE = re.compile(
 
 
 class SyslogReceiver(asyncio.DatagramProtocol):
-    """Receive UDP syslog messages and extract the Bluetooth headset state."""
+    """Receive UDP syslog messages and extract the Bluetooth headset state.
 
-    def __init__(self) -> None:
+    Only datagrams from the configured phone address are accepted, so other
+    hosts cannot inject a fake headset state.
+    """
+
+    def __init__(self, phone_ip: str | None = None) -> None:
+        self.phone_ip = phone_ip
         self.transport: asyncio.DatagramTransport | None = None
         self._lock = threading.Lock()
         self._seq = 0
         self._headset: dict[str, Any] | None = None
         self._headset_seq = 0
         self.message_count = 0
+        self.ignored_count = 0
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = transport  # type: ignore[assignment]
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
+        if self.phone_ip and addr[0] != self.phone_ip:
+            self.ignored_count += 1
+            return
         text = data.decode("utf-8", "replace").rstrip("\x00\r\n")
         match = _BT_DEVICE.search(text)
         with self._lock:
@@ -78,11 +88,24 @@ class SyslogReceiver(asyncio.DatagramProtocol):
             return dict(self._headset)
 
 
+async def _async_resolve(hass: HomeAssistant, host: str | None) -> str | None:
+    """Resolve the configured phone address to an IPv4 address."""
+    if not host:
+        return None
+    if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host):
+        return host
+    try:
+        return await hass.async_add_executor_job(socket.gethostbyname, host)
+    except OSError:
+        _LOGGER.debug("Could not resolve %s for syslog filtering", host)
+        return None
+
+
 async def async_start_syslog(
-    hass: HomeAssistant, port: int
+    hass: HomeAssistant, port: int, host: str | None = None
 ) -> tuple[SyslogReceiver | None, asyncio.DatagramTransport | None]:
     """Bind the syslog UDP port.  Returns ``(None, None)`` when unavailable."""
-    receiver = SyslogReceiver()
+    receiver = SyslogReceiver(await _async_resolve(hass, host))
     try:
         transport, _ = await hass.loop.create_datagram_endpoint(
             lambda: receiver, local_addr=("0.0.0.0", port)

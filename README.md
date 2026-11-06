@@ -187,6 +187,27 @@ Bei aktivierter Anrufsteuerung trägt die Integration die eigene LAN-IP
 automatisch ein (sofern die Liste nicht bereits `any` enthält). Alternativ die
 IP manuell im Telefon-Webinterface eintragen.
 
+## Sicherheit
+
+- **TLS-Prüfung:** standardmäßig aus, weil das Telefon ein selbstsigniertes
+  Zertifikat nutzt. Wer dem Zertifikat vertraut, aktiviert die Prüfung bei der
+  Einrichtung; ohne Prüfung ist ein LAN-MITM beim RSA-Schlüssel und damit beim
+  Admin-Passwort möglich.
+- **Passwort:** wird nur im Config-Entry gespeichert (HA-Standard,
+  `.storage/core.config_entries`) und nie geloggt. Es ist das
+  Telefon-**Admin**-Passwort, also voller Zugriff auf das Webinterface.
+- **Syslog:** Der UDP-Listener akzeptiert nur Pakete der konfigurierten
+  Telefon-IP, damit Fremde keinen Headset-Status vortäuschen können. Syslog ist
+  unverschlüsselt (UDP).
+- **Action-URI-Allowlist:** Die HA-IP wird beim Einrichten eingetragen und beim
+  Entladen wieder entfernt. Eine vorhandene `any`-Regel bleibt unberührt.
+- **Angriffsfläche:** Wer Home Assistant übernimmt, hat auch das
+  Telefon-Passwort. HA sollte deshalb nicht ungeschützt aus dem Internet
+  erreichbar sein (Cloudflared/Reverse Proxy nur mit Auth).
+- Die Integration ändert Telefon-Einstellungen nur dort, wo es muss
+  (Syslog-Ziel, Action-URI-Allowlist) und stellt das Syslog-Ziel beim Entladen
+  zurück.
+
 ## Bekannte Einschränkungen
 
 - Nur Polling, keine Push-Verbindung. Das Intervall bestimmt die Verzögerung.
@@ -200,20 +221,17 @@ IP manuell im Telefon-Webinterface eintragen.
 - Nach einem Werksreset oder Passwortwechsel meldet sich die Integration über
   den Reauth-Flow.
 
-## Betrieb neben `monitor.py`
+## Das frühere Monitor-Toolset
 
-Die Integration ersetzt die MQTT-Anbindung des früheren Monitor-Toolsets.
-Beides gleichzeitig ergibt doppelte Entities und konkurrierende
-Syslog-Einstellungen:
+Die Integration ersetzt das alte Standalone-Toolset (`monitor.py` mit
+Dashboard, MQTT-Discovery und eigenem Syslog-Listener) vollständig. Der Monitor
+wird **nicht mehr benötigt** und läuft nicht mehr.
 
-- Vor der Einrichtung `pkill -f monitor.py` ausführen (sauberer SIGTERM, damit
-  das Telefon-Syslog zurückgestellt wird).
-- Die alten MQTT-Discovery-Entities in Home Assistant entfernen oder das
-  MQTT-Gerät deaktivieren, sonst existieren sie parallel.
+- Alte MQTT-Discovery-Entities und das MQTT-Gerät „Yealink T54W" wurden entfernt;
+  es existieren keine `yealink/t54w`-Topics mehr.
 - Nur **ein** Syslog-Empfänger darf auf dem konfigurierten UDP-Port lauschen.
-- Wer das LAN-Dashboard weiter nutzen will, kann `monitor.py --no-mqtt
-  --no-syslog` starten. Dann bleiben aber die Headset-Karten im Dashboard leer,
-  weil die Integration den Syslog-Empfang übernimmt.
+- Wer die alte API-Reimplementierung zum Debuggen braucht: siehe `legacy/` im
+  Toolset-Ordner (`yealink.py`, `probe.py`).
 
 ## Fehlersuche
 

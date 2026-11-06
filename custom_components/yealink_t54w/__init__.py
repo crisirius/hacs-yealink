@@ -75,6 +75,8 @@ class YealinkRuntime:
     syslog: SyslogReceiver | None
     previous_syslog: dict[str, str] | None
     dial_number: str = ""
+    local_ip: str | None = None
+    action_uri_added: bool = False
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
@@ -118,16 +120,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if options.get(CONF_ENABLE_HEADSET, True):
         port = int(options.get(CONF_SYSLOG_PORT, DEFAULT_SYSLOG_PORT))
-        syslog, _transport = await async_start_syslog(hass, port)
+        syslog, _transport = await async_start_syslog(hass, port, host)
         if syslog is not None and options.get(CONF_CONFIGURE_SYSLOG, True):
             previous_syslog = await hass.async_add_executor_job(
                 _configure_phone_syslog, client, host, port
             )
 
+    action_uri_ip: str | None = None
+    action_uri_added = False
     if options.get(CONF_ENABLE_CALL_CONTROL, True):
+        action_uri_ip = await hass.async_add_executor_job(_local_ip, host)
         try:
-            added = await hass.async_add_executor_job(_ensure_action_uri, client, host)
-            if added:
+            action_uri_added = await hass.async_add_executor_job(
+                _ensure_action_uri, client, action_uri_ip
+            )
+            if action_uri_added:
                 _LOGGER.info(
                     "Added Home Assistant to the phone's Action URI allow list"
                 )
@@ -140,6 +147,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except (ConfigEntryAuthFailed, ConfigEntryNotReady):
         if syslog is not None:
             syslog.close()
+        if action_uri_added and action_uri_ip:
+            try:
+                await hass.async_add_executor_job(
+                    client.remove_action_uri_ip, action_uri_ip
+                )
+            except YealinkError as exc:
+                _LOGGER.warning(
+                    "Could not remove Home Assistant from the Action URI allow list: %s",
+                    exc,
+                )
         if previous_syslog:
             try:
                 await hass.async_add_executor_job(
@@ -155,6 +172,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator=coordinator,
         syslog=syslog,
         previous_syslog=previous_syslog,
+        local_ip=action_uri_ip,
+        action_uri_added=action_uri_added,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -170,6 +189,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if runtime is not None:
         if runtime.syslog is not None:
             runtime.syslog.close()
+        if runtime.action_uri_added and runtime.local_ip:
+            try:
+                await hass.async_add_executor_job(
+                    runtime.client.remove_action_uri_ip, runtime.local_ip
+                )
+            except YealinkError as exc:
+                _LOGGER.warning(
+                    "Could not remove Home Assistant from the Action URI allow list: %s",
+                    exc,
+                )
         if runtime.previous_syslog:
             try:
                 await hass.async_add_executor_job(
@@ -262,8 +291,7 @@ def _local_ip(host: str) -> str | None:
         return None
 
 
-def _ensure_action_uri(client: Yealink, host: str) -> bool:
-    ip = _local_ip(host)
+def _ensure_action_uri(client: Yealink, ip: str | None) -> bool:
     if not ip:
         return False
     return client.ensure_action_uri_ip(ip)

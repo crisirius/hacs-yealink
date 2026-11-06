@@ -30,6 +30,8 @@ async def async_setup_entry(
 class YealinkDialTextEntity(YealinkEntity, TextEntity):
     """Text holding a phone number to dial on the phone."""
 
+    _attr_translation_key = "dial_number"
+
     def __init__(
         self,
         coordinator: YealinkCoordinator,
