@@ -144,7 +144,7 @@
         "name": "Neustart"
       }
     },
-    "number": {
+    "text": {
       "dial_number": {
         "name": "Anrufnummer"
       }

@@ -117,7 +117,7 @@ Gerätenamen abgeleitet, z. B. `sensor.yealink_t54w_firmware`.
 | Headset verbunden | Binary Sensor | Verbindungsstatus (nur mit Syslog) |
 | Auflegen | Button | beendet das Gespräch |
 | Neustart | Button | startet das Telefon neu (**standardmäßig deaktiviert**) |
-| Anrufnummer | Number | Rufnummer zum Anruf – **Setzen löst automatisch einen Anruf aus** |
+| Anrufnummer | Text | Rufnummer zum Anruf – **Setzen löst automatisch einen Anruf aus** (z. B. `+491701234567`, führende Nullen möglich) |
 
 Die Leitungs-Entities werden beim Einrichten aus den aktuell konfigurierten
 Accounts erzeugt. Kommt später ein Account hinzu, hilft ein Neuladen des
@@ -257,6 +257,7 @@ custom_components/yealink_t54w/
 ├── services.yaml
 ├── strings.json
 ├── syslog.py          UDP-Listener für die Headset-Erkennung
+├── text.py            Anrufnummer (Setzen löst Anruf aus)
 └── translations/      de.json, en.json
 ```
 

@@ -144,7 +144,7 @@
         "name": "Restart"
       }
     },
-    "number": {
+    "text": {
       "dial_number": {
         "name": "Dial number"
       }
