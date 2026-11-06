@@ -7,7 +7,37 @@
   "config_flow": true,
   "dhcp": [
     {
-      "macaddress": "805E*"
+      "macaddress": "24:9A:D8*"
+    },
+    {
+      "macaddress": "44:DB:D2*"
+    },
+    {
+      "macaddress": "80:5E:0C*"
+    },
+    {
+      "macaddress": "80:5E:C0*"
+    },
+    {
+      "macaddress": "C4:FC:22*"
+    },
+    {
+      "macaddress": "EC:1D:A9*"
+    },
+    {
+      "macaddress": "00:15:65*"
+    },
+    {
+      "macaddress": "64:4F:56*"
+    },
+    {
+      "macaddress": "34:97:D7*"
+    },
+    {
+      "macaddress": "B0:61:A9*"
+    },
+    {
+      "macaddress": "F0:16:53*"
     }
   ],
   "documentation": "https://github.com/crisirius/hacs-yealink",
@@ -15,5 +45,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/crisirius/hacs-yealink/issues",
   "requirements": [],
-  "version": "0.2.6"
+  "version": "0.2.7"
 }
