@@ -112,7 +112,7 @@ def _phone_selector(phones: list[DiscoveredPhone]) -> SelectSelector:
 
 
 def _normalize_host(value: str) -> str:
-    """Accept ``172.20.1.130``, ``https://phone/`` and similar input."""
+    """Accept ``PHONE_HOST``, ``https://phone/`` and similar input."""
     host = value.strip()
     if "://" in host:
         parsed = urllib.parse.urlsplit(host)

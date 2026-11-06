@@ -59,7 +59,7 @@ bestätigt werden.
 
 | Feld | Bedeutung |
 |---|---|
-| Host oder IP-Adresse | nur bei manueller Einrichtung, z. B. `172.20.1.130` |
+| Host oder IP-Adresse | nur bei manueller Einrichtung, z. B. `PHONE_HOST` |
 | Benutzername | meist `admin` |
 | Passwort | Web-Passwort des Telefons |
 | TLS-Zertifikat prüfen | standardmäßig aus (Yealink nutzt ein selbstsigniertes Zertifikat) |
