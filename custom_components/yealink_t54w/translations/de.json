@@ -51,6 +51,13 @@
         "data": {
           "password": "Passwort"
         }
+      },
+      "scan_fallback": {
+        "title": "Telefon per Adresse hinzufügen",
+        "description": "Die Netzwerksuche hat kein Telefon gefunden. Gib die IP-Adresse des Telefons ein, um fortzufahren.",
+        "data": {
+          "host": "Host oder IP-Adresse"
+        }
       }
     },
     "error": {

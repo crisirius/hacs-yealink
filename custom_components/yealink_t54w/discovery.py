@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Iterable
 
-PROBE_TIMEOUT = 0.6
+PROBE_TIMEOUT = 1.2
 MAX_WORKERS = 96
 
 _TITLE_RE = re.compile(r"<title>([^<]*)</title>", re.IGNORECASE)

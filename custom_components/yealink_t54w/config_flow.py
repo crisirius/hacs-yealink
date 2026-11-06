@@ -354,16 +354,25 @@ class YealinkConfigFlow(ConfigFlow, domain=DOMAIN):
 
         networks = await _async_local_networks(self.hass)
         if not networks:
-            return self.async_abort(reason="no_network")
+            _LOGGER.debug("No suitable local network available for the scan")
+            return await self.async_step_scan_fallback()
+
+        _LOGGER.debug(
+            "Scanning %s for Yealink phones", ", ".join(str(net) for net in networks)
+        )
 
         try:
             phones = await self.hass.async_add_executor_job(scan_networks, networks)
-        except Exception:  # noqa: BLE001 - report a clean abort to the user
+        except Exception:  # noqa: BLE001 - fall back to the manual entry
             _LOGGER.exception("The Yealink network scan failed")
-            return self.async_abort(reason="scan_failed")
+            return await self.async_step_scan_fallback()
 
         if not phones:
-            return self.async_abort(reason="no_devices_found")
+            _LOGGER.debug(
+                "No Yealink phone answered on %s",
+                ", ".join(str(net) for net in networks),
+            )
+            return await self.async_step_scan_fallback()
 
         self._discovered = phones
         return self.async_show_form(
@@ -372,6 +381,20 @@ class YealinkConfigFlow(ConfigFlow, domain=DOMAIN):
                 {vol.Required(CONF_HOST): _phone_selector(phones)}
             ),
             description_placeholders={"count": str(len(phones))},
+        )
+
+    async def async_step_scan_fallback(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask for the address when the scan did not find the phone."""
+        if user_input is not None:
+            self._host = _normalize_host(str(user_input[CONF_HOST]))
+            self._model = None
+            return await self.async_step_credentials()
+
+        return self.async_show_form(
+            step_id="scan_fallback",
+            data_schema=vol.Schema({vol.Required(CONF_HOST): TextSelector()}),
         )
 
     async def async_step_dhcp(

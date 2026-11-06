@@ -51,6 +51,13 @@
         "data": {
           "password": "Password"
         }
+      },
+      "scan_fallback": {
+        "title": "Add the phone by address",
+        "description": "No phone answered the network scan. Enter the phone's IP address to continue.",
+        "data": {
+          "host": "Host or IP address"
+        }
       }
     },
     "error": {
