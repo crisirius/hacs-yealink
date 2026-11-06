@@ -15,7 +15,7 @@ Monitor-Prozess.
 - **SIP-Leitungen:** Registrierungsstatus und Nummer je konfiguriertem Account
 - **Anrufliste:** letzter Anruf inkl. Richtung, Nummer, Zeit und Dauer
 - **Headset:** verbunden, Modell und MAC (per Syslog, optional)
-- **Anrufsteuerung:** Auflegen-Button, Neustart-Button, Dial-Service
+- **Anrufsteuerung:** Auflegen-Button, Neustart-Button, Dial-Service, Anrufnummer-Entity
 - **Automatischer Re-Login:** nach einem Telefon-Neustart meldet sich die
   Integration mit den gespeicherten Zugangsdaten selbst wieder an
 - **Reauth-Flow:** bei falschem/geändertem Passwort fragt Home Assistant nach
@@ -117,6 +117,7 @@ Gerätenamen abgeleitet, z. B. `sensor.yealink_t54w_firmware`.
 | Headset verbunden | Binary Sensor | Verbindungsstatus (nur mit Syslog) |
 | Auflegen | Button | beendet das Gespräch |
 | Neustart | Button | startet das Telefon neu (**standardmäßig deaktiviert**) |
+| Anrufnummer | Number | Rufnummer zum Anruf – **Setzen löst automatisch einen Anruf aus** |
 
 Die Leitungs-Entities werden beim Einrichten aus den aktuell konfigurierten
 Accounts erzeugt. Kommt später ein Account hinzu, hilft ein Neuladen des
@@ -251,6 +252,7 @@ custom_components/yealink_t54w/
 ├── discovery.py       Netzwerksuche nach Yealink-Telefonen
 ├── entity.py          gemeinsame Gerätezuordnung
 ├── manifest.json
+├── number.py          Anrufnummer (wenn gesetzt: automatischer Anruf)
 ├── sensor.py          Status, Gerät, WLAN, Anrufliste, Headset
 ├── services.yaml
 ├── strings.json

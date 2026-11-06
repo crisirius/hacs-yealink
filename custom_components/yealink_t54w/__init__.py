@@ -43,6 +43,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
+    Platform.NUMBER,
 ]
 
 SERVICE_DIAL = "dial"
@@ -73,6 +74,7 @@ class YealinkRuntime:
     coordinator: YealinkCoordinator
     syslog: SyslogReceiver | None
     previous_syslog: dict[str, str] | None
+    dial_number: str = ""
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:

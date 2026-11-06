@@ -143,6 +143,11 @@
       "reboot": {
         "name": "Restart"
       }
+    },
+    "number": {
+      "dial_number": {
+        "name": "Dial number"
+      }
     }
   },
   "services": {

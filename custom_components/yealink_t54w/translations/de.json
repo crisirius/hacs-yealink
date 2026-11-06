@@ -143,6 +143,11 @@
       "reboot": {
         "name": "Neustart"
       }
+    },
+    "number": {
+      "dial_number": {
+        "name": "Anrufnummer"
+      }
     }
   },
   "services": {
