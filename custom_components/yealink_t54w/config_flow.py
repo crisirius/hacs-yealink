@@ -53,6 +53,8 @@ from .const import (
     MAX_SYSLOG_PORT,
     MIN_SCAN_INTERVAL,
     MIN_SYSLOG_PORT,
+    normalize_mac,
+    resolve_unique_id,
 )
 from .discovery import DiscoveredPhone, scan_networks
 
@@ -402,9 +404,7 @@ class YealinkConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle a phone announced by the DHCP integration."""
         host = discovery_info.ip
-        mac = (
-            discovery_info.macaddress.replace(":", "").replace("-", "").lower()
-        )
+        mac = normalize_mac(discovery_info.macaddress)
         await self.async_set_unique_id(mac)
         self._abort_if_unique_id_configured(updates={CONF_HOST: host})
 
@@ -509,10 +509,12 @@ class YealinkConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected error while validating the phone")
             errors["base"] = "unknown"
         else:
-            mac = (info.get("wui.device.mac") or "").lower()
-            await self.async_set_unique_id(
-                mac or self._dhcp_mac or self._host or host.lower()
+            unique_id = resolve_unique_id(
+                info.get("wui.device.mac") or "",
+                self._dhcp_mac,
+                self._host or host,
             )
+            await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured(updates={CONF_HOST: host})
 
             model = info.get("wui.device.phoneName") or self._model or "Yealink"

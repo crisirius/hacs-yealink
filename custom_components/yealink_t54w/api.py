@@ -184,6 +184,8 @@ class Yealink:
         except YealinkError as exc:
             # The phone returns ret=failed/noauth but still includes the key.
             data = exc.error or {}
+        if not isinstance(data, dict):
+            data = {}
         n = data.get("rsaN") or data.get("wui.common.rsaN")
         e = data.get("rsaE") or data.get("wui.common.rsaE")
         if not n or not e:
@@ -217,7 +219,7 @@ class Yealink:
         self.csrf_token = data.get("wui.common.token") or None
 
     def logout(self) -> dict:
-        return self.post("/api/auth/logout")
+        return self.post("/api/auth/logout", {})
 
     def user(self) -> dict:
         return self.get("/api/auth/user")
@@ -356,7 +358,7 @@ class Yealink:
     # ------------------------------------------------------------------ system
 
     def reboot(self) -> dict:
-        return self.post("/api/system/reboot")
+        return self.post("/api/system/reboot", {})
 
     def restart_web(self) -> dict:
-        return self.post("/api/service/restart/web")
+        return self.post("/api/service/restart/web", {})

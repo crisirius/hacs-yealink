@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any, Final
 
 DOMAIN: Final = "yealink_t54w"
@@ -49,6 +50,55 @@ CALL_TYPES: Final[dict[str, str]] = {
 }
 
 ATTR_ENTRY_ID: Final = "entry_id"
+
+_MAC_SEPARATORS = str.maketrans("", "", ":-. \t\r\n")
+_HEX_DIGITS = frozenset("0123456789abcdef")
+
+
+def call_control_enabled(options: Mapping[str, Any]) -> bool:
+    """Return whether dial and hangup features are enabled for an entry."""
+    return bool(options.get(CONF_ENABLE_CALL_CONTROL, True))
+
+
+def as_int(value: Any, default: int = 0) -> int:
+    """Convert ``value`` to int, falling back when the phone sends junk."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def normalize_mac(value: str) -> str:
+    """Return a MAC address as lowercase hex without separators."""
+    return value.translate(_MAC_SEPARATORS).lower()
+
+
+def is_mac(value: str) -> bool:
+    """Return True when ``value`` looks like a 48-bit MAC address."""
+    normalized = normalize_mac(value)
+    return len(normalized) == 12 and all(char in _HEX_DIGITS for char in normalized)
+
+
+def format_mac(value: str) -> str:
+    """Return a colon-separated MAC address, or an empty string."""
+    normalized = normalize_mac(value)
+    if not is_mac(normalized):
+        return ""
+    return ":".join(normalized[index : index + 2] for index in range(0, 12, 2))
+
+
+def resolve_unique_id(
+    info_mac: str, dhcp_mac: str | None, host: str
+) -> str:
+    """Pick the most stable unique ID available for a config entry."""
+    normalized = normalize_mac(info_mac)
+    if is_mac(normalized):
+        return normalized
+    if dhcp_mac:
+        normalized_dhcp = normalize_mac(dhcp_mac)
+        if is_mac(normalized_dhcp):
+            return normalized_dhcp
+    return host.lower()
 
 
 def trans_account_status(code: Any) -> str:

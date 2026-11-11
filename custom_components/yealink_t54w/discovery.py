@@ -33,11 +33,22 @@ class DiscoveredPhone:
     model: str
 
 
-def _probe(host: str, timeout: float = PROBE_TIMEOUT) -> DiscoveredPhone | None:
-    """Return the phone at ``host`` or ``None`` when it is not a Yealink."""
+def _create_ssl_context() -> ssl.SSLContext:
+    """Build the permissive TLS context used by the local probe."""
     context = ssl.create_default_context()
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
+    return context
+
+
+def _probe(
+    host: str,
+    timeout: float = PROBE_TIMEOUT,
+    context: ssl.SSLContext | None = None,
+) -> DiscoveredPhone | None:
+    """Return the phone at ``host`` or ``None`` when it is not a Yealink."""
+    if context is None:
+        context = _create_ssl_context()
 
     connection = http.client.HTTPSConnection(
         host, 443, timeout=timeout, context=context
@@ -83,8 +94,13 @@ def scan_networks(
         return []
 
     workers = min(max_workers, len(hosts))
+    # The CA bundle is read once when the context is created; share it across
+    # every probe instead of paying that cost for each host.
+    context = _create_ssl_context()
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(lambda host: _probe(host, timeout), hosts))
+        results = list(
+            pool.map(lambda host: _probe(host, timeout, context), hosts)
+        )
 
     phones = [phone for phone in results if phone is not None]
     return sorted(phones, key=lambda phone: ipaddress.ip_address(phone.host))

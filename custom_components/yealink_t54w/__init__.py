@@ -31,6 +31,9 @@ from .const import (
     CONF_VERIFY_TLS,
     DEFAULT_SYSLOG_PORT,
     DOMAIN,
+    call_control_enabled,
+    is_mac,
+    normalize_mac,
 )
 from .coordinator import YealinkCoordinator
 from .syslog import SyslogReceiver, async_start_syslog
@@ -89,7 +92,6 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up one phone from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     host = entry.data[CONF_HOST]
     client = Yealink(
@@ -110,9 +112,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ) from exc
         raise ConfigEntryNotReady(f"Could not connect to {host}: {exc}") from exc
 
-    mac = (info.get("wui.device.mac") or "").lower()
-    if mac and not entry.unique_id:
+    mac = normalize_mac(info.get("wui.device.mac") or "")
+    if is_mac(mac) and not entry.unique_id:
         hass.config_entries.async_update_entry(entry, unique_id=mac)
+
+    # Register this only after the unique ID is settled; updating the entry
+    # triggers the listener, which would otherwise reload an entry that is
+    # still being set up.
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     options = entry.options
     syslog: SyslogReceiver | None = None
@@ -154,7 +161,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 )
             except YealinkError as exc:
                 _LOGGER.warning(
-                    "Could not remove Home Assistant from the Action URI allow list: %s",
+                    "Could not remove Home Assistant from the Action URI "
+                    "allow list: %s",
                     exc,
                 )
         if previous_syslog:
@@ -196,7 +204,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 )
             except YealinkError as exc:
                 _LOGGER.warning(
-                    "Could not remove Home Assistant from the Action URI allow list: %s",
+                    "Could not remove Home Assistant from the Action URI "
+                    "allow list: %s",
                     exc,
                 )
         if runtime.previous_syslog:
@@ -225,6 +234,7 @@ def _register_services(hass: HomeAssistant) -> None:
 
     async def handle_dial(call: ServiceCall) -> None:
         runtime = _runtime_for_call(hass, call)
+        _require_call_control(runtime)
         number = str(call.data["number"]).strip()
         if not number:
             raise HomeAssistantError("The dial number must not be empty")
@@ -237,6 +247,7 @@ def _register_services(hass: HomeAssistant) -> None:
 
     async def handle_hangup(call: ServiceCall) -> None:
         runtime = _runtime_for_call(hass, call)
+        _require_call_control(runtime)
         try:
             await hass.async_add_executor_job(runtime.client.hangup)
         except YealinkError as exc:
@@ -259,6 +270,15 @@ def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(
         DOMAIN, SERVICE_REBOOT, handle_reboot, schema=SERVICE_TARGET_SCHEMA
     )
+
+
+def _require_call_control(runtime: YealinkRuntime) -> None:
+    """Raise when call control is disabled for this phone."""
+    if not call_control_enabled(runtime.entry.options):
+        raise HomeAssistantError(
+            "Call control is disabled for this phone; enable it in the "
+            "integration options"
+        )
 
 
 def _runtime_for_call(hass: HomeAssistant, call: ServiceCall) -> YealinkRuntime:

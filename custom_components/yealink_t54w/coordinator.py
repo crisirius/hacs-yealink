@@ -23,6 +23,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     HEADSET_REFRESH,
     as_bool,
+    as_int,
     pick,
     trans_account_status,
 )
@@ -61,6 +62,7 @@ class YealinkCoordinator(DataUpdateCoordinator[PhoneData]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=f"Yealink {entry.title}",
             update_interval=timedelta(seconds=interval),
         )
@@ -152,7 +154,7 @@ class YealinkCoordinator(DataUpdateCoordinator[PhoneData]):
 
         wifi_raw = self._optional(self.client.wifi_status, {}) or {}
         connected = str(wifi_raw.get("constatus")) == "1"
-        signal = int(wifi_raw.get("signal") or 0)
+        signal = as_int(wifi_raw.get("signal"))
         wifi = {
             "connected": connected,
             "ssid": (wifi_raw.get("ssid") or "") if connected else "",

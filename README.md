@@ -49,11 +49,12 @@ Beim Hinzufügen der Integration stehen zwei Wege zur Auswahl:
 
 1. **IP-Adresse manuell eingeben** – Host, Benutzername und Passwort eintragen.
 2. **Lokales Netzwerk durchsuchen** – die Integration sucht Yealink-Telefone
-   im lokalen Netz, zeigt die Treffer zur Auswahl an und fragt danach nur noch
-   die Zugangsdaten ab.
+   im lokalen Netz und zeigt die Treffer zur Auswahl an. Wird nichts gefunden,
+   fragt sie stattdessen die IP-Adresse ab; danach nur noch die Zugangsdaten.
 
 Zusätzlich erkennt Home Assistant ein Telefon automatisch per DHCP, sobald es
-mit dem MAC-Präfix `80:5E:0C` im Netz erscheint. Dann erscheint das Gerät als
+mit einer der hinterlegten Yealink-OUIs im Netz erscheint (u. a. `24:9A:D8`,
+`44:DB:D2`, `80:5E:0C`, `80:5E:C0`, `C4:FC:22`). Dann erscheint das Gerät als
 neuer Fund unter **Einstellungen → Geräte & Dienste** und muss nur noch
 bestätigt werden.
 
@@ -64,7 +65,7 @@ bestätigt werden.
 | Passwort | Web-Passwort des Telefons |
 | TLS-Zertifikat prüfen | standardmäßig aus (Yealink nutzt ein selbstsigniertes Zertifikat) |
 | Abfrageintervall | Standard 30 s, erlaubt 10–600 s |
-| Anrufsteuerung | Dial-/Hangup-Services und Buttons |
+| Anrufsteuerung | Dial-/Hangup-Services, Buttons und Dial-Entity (deaktiviert diese vollständig) |
 | Headset per Syslog | UDP-Listener für die Bluetooth-Erkennung |
 | Syslog-UDP-Port | Standard `5514` |
 | Telefon-Syslog umstellen | trägt die HA-IP automatisch im Telefon ein |
@@ -87,8 +88,8 @@ Netze). Ein Treffer wird über den Seitentitel des Webinterface erkannt
 - **Home Assistant Container/Docker:** Die Suche funktioniert nur mit
   Host-Netzwerk (`network_mode: host`). Mit Bridge-Netzwerk ist das LAN des
   Telefons nicht erreichbar – dann die IP-Adresse manuell eintragen.
-- Wird nichts gefunden, bricht der Dialog mit einem Hinweis ab; die manuelle
-  Einrichtung bleibt verfügbar.
+- Wird nichts gefunden, fragt der Dialog stattdessen die IP-Adresse ab; die
+  manuelle Einrichtung bleibt verfügbar.
 
 ### Optionen ändern
 
@@ -240,7 +241,7 @@ wird **nicht mehr benötigt** und läuft nicht mehr.
 | `invalid_auth` | Benutzername/Passwort falsch oder Web-Login deaktiviert |
 | `cannot_connect` | IP/Port prüfen, HTTPS am Telefon aktiv, LAN erreichbar |
 | Netzwerksuche findet nichts | anderes Subnetz, Docker-Bridge oder Firewall; IP manuell eintragen |
-| Telefon wird nicht per DHCP erkannt | MAC-Präfix prüfen oder Telefon manuell hinzufügen |
+| Telefon wird nicht per DHCP erkannt | DHCP-Integration aktiv? MAC im Router sichtbar? Sonst Telefon manuell hinzufügen |
 | Dial endet mit `ret: failed` | Action-URI-Allowlist prüfen (siehe oben) |
 | Headset-Entities fehlen | Syslog deaktiviert, Port belegt oder UDP blockiert |
 | Headset bleibt „unbekannt“ | Telefon sendet kein Syslog an HA; Port/Firewall prüfen |
@@ -270,7 +271,6 @@ custom_components/yealink_t54w/
 ├── discovery.py       Netzwerksuche nach Yealink-Telefonen
 ├── entity.py          gemeinsame Gerätezuordnung
 ├── manifest.json
-├── number.py          Anrufnummer (wenn gesetzt: automatischer Anruf)
 ├── sensor.py          Status, Gerät, WLAN, Anrufliste, Headset
 ├── services.yaml
 ├── strings.json
@@ -285,8 +285,17 @@ Syntaxprüfung:
 python3 -m compileall custom_components/yealink_t54w
 ```
 
-Die GitHub-Workflows prüfen bei jedem Push mit **hassfest** und der
-**HACS Action**.
+Tests und Lint:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements_test.txt
+.venv/bin/ruff check custom_components tests
+.venv/bin/python -m pytest
+```
+
+Die GitHub-Workflows prüfen bei jedem Push mit **hassfest**, der
+**HACS Action** sowie **ruff** und **pytest**.
 
 ### Release
 
@@ -295,7 +304,7 @@ HACS erkennt Updates über GitHub-Releases. Vor dem Push die Version in
 und ein Release anlegen:
 
 ```bash
-git tag v0.2.2
+git tag v1.1.0
 git push origin main --tags
 ```
 
