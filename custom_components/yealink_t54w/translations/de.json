@@ -18,7 +18,7 @@
           "password": "Passwort",
           "verify_tls": "TLS-Zertifikat prüfen",
           "scan_interval": "Abfrageintervall",
-          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_call_control": "Anrufsteuerung aktivieren (Buttons, Services und Dial-Entity)",
           "enable_headset": "Bluetooth-Headset per Syslog erkennen",
           "syslog_port": "Syslog-UDP-Port",
           "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"
@@ -39,7 +39,7 @@
           "password": "Passwort",
           "verify_tls": "TLS-Zertifikat prüfen",
           "scan_interval": "Abfrageintervall",
-          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_call_control": "Anrufsteuerung aktivieren (Buttons, Services und Dial-Entity)",
           "enable_headset": "Bluetooth-Headset per Syslog erkennen",
           "syslog_port": "Syslog-UDP-Port",
           "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"
@@ -69,10 +69,7 @@
       "already_configured": "Dieses Telefon ist bereits eingerichtet.",
       "already_in_progress": "Die Einrichtung für dieses Telefon läuft bereits.",
       "reauth_successful": "Anmeldung erfolgreich erneuert.",
-      "reauth_failed": "Der Konfigurationseintrag existiert nicht mehr.",
-      "no_devices_found": "Im lokalen Netzwerk wurde kein Yealink-Telefon gefunden. Füge es stattdessen manuell hinzu.",
-      "no_network": "Kein passendes lokales Netzwerk gefunden. Füge das Telefon manuell hinzu.",
-      "scan_failed": "Die Netzwerksuche ist fehlgeschlagen. Füge das Telefon manuell hinzu."
+      "reauth_failed": "Der Konfigurationseintrag existiert nicht mehr."
     }
   },
   "options": {
@@ -81,7 +78,7 @@
         "title": "Yealink-Optionen",
         "data": {
           "scan_interval": "Abfrageintervall",
-          "enable_call_control": "Anrufsteuerung aktivieren (wählen, auflegen)",
+          "enable_call_control": "Anrufsteuerung aktivieren (Buttons, Services und Dial-Entity)",
           "enable_headset": "Bluetooth-Headset per Syslog erkennen",
           "syslog_port": "Syslog-UDP-Port",
           "configure_syslog": "Telefon-Syslog auf Home Assistant umstellen"

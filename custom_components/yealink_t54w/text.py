@@ -11,7 +11,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import YealinkError
-from .const import DOMAIN
+from .const import DOMAIN, call_control_enabled
 from .coordinator import YealinkCoordinator
 from .entity import YealinkEntity
 
@@ -22,6 +22,8 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Add the dial text entity for this phone."""
+    if not call_control_enabled(entry.options):
+        return
     runtime = hass.data[DOMAIN][entry.entry_id]
     coordinator: YealinkCoordinator = runtime.coordinator
     async_add_entities([YealinkDialTextEntity(coordinator, entry)])
@@ -43,9 +45,7 @@ class YealinkDialTextEntity(YealinkEntity, TextEntity):
 
     @property
     def native_value(self) -> str | None:
-        runtime: Any = (
-            self.coordinator.hass.data[DOMAIN][self.coordinator.config_entry.entry_id]
-        )
+        runtime: Any = self.coordinator.hass.data[DOMAIN][self._entry.entry_id]
         value = (runtime.dial_number or "").strip()
         return value or None
 
@@ -54,9 +54,7 @@ class YealinkDialTextEntity(YealinkEntity, TextEntity):
         number = (value or "").strip()
         if not number:
             raise HomeAssistantError("The dial number must not be empty")
-        runtime: Any = (
-            self.coordinator.hass.data[DOMAIN][self.coordinator.config_entry.entry_id]
-        )
+        runtime: Any = self.coordinator.hass.data[DOMAIN][self._entry.entry_id]
         runtime.dial_number = number
         try:
             await self.hass.async_add_executor_job(runtime.client.dial, number, "Auto")

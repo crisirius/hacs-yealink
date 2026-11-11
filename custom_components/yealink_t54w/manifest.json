@@ -13,37 +13,37 @@
   "config_flow": true,
   "dhcp": [
     {
-      "macaddress": "24:9A:D8*"
+      "macaddress": "249AD8*"
     },
     {
-      "macaddress": "44:DB:D2*"
+      "macaddress": "44DBD2*"
     },
     {
-      "macaddress": "80:5E:0C*"
+      "macaddress": "805E0C*"
     },
     {
-      "macaddress": "80:5E:C0*"
+      "macaddress": "805EC0*"
     },
     {
-      "macaddress": "C4:FC:22*"
+      "macaddress": "C4FC22*"
     },
     {
-      "macaddress": "EC:1D:A9*"
+      "macaddress": "EC1DA9*"
     },
     {
-      "macaddress": "00:15:65*"
+      "macaddress": "001565*"
     },
     {
-      "macaddress": "64:4F:56*"
+      "macaddress": "644F56*"
     },
     {
-      "macaddress": "34:97:D7*"
+      "macaddress": "3497D7*"
     },
     {
-      "macaddress": "B0:61:A9*"
+      "macaddress": "B061A9*"
     },
     {
-      "macaddress": "F0:16:53*"
+      "macaddress": "F01653*"
     }
   ],
   "documentation": "https://github.com/crisirius/hacs-yealink",

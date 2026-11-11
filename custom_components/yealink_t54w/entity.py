@@ -5,10 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import (
+    CONNECTION_NETWORK_MAC,
+    DeviceInfo,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_HOST, DOMAIN, MANUFACTURER
+from .const import CONF_HOST, DOMAIN, MANUFACTURER, format_mac
 from .coordinator import YealinkCoordinator
 
 
@@ -31,8 +34,10 @@ class YealinkEntity(CoordinatorEntity[YealinkCoordinator]):
     def device_info(self) -> DeviceInfo:
         data = self.coordinator.data
         phone: dict[str, Any] = data.phone if data else {}
+        mac = format_mac(phone.get("mac") or "")
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.unique_id or self._entry.entry_id)},
+            connections={(CONNECTION_NETWORK_MAC, mac)} if mac else set(),
             manufacturer=MANUFACTURER,
             model=phone.get("name") or "T5x",
             name=self._entry.title,

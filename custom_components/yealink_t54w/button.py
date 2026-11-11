@@ -9,7 +9,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import YealinkError
-from .const import DOMAIN
+from .const import DOMAIN, call_control_enabled
 from .coordinator import YealinkCoordinator
 from .entity import YealinkEntity
 
@@ -21,12 +21,10 @@ async def async_setup_entry(
 ) -> None:
     runtime = hass.data[DOMAIN][entry.entry_id]
     coordinator: YealinkCoordinator = runtime.coordinator
-    async_add_entities(
-        [
-            HangupButton(coordinator, entry),
-            RebootButton(coordinator, entry),
-        ]
-    )
+    entities: list[ButtonEntity] = [RebootButton(coordinator, entry)]
+    if call_control_enabled(entry.options):
+        entities.insert(0, HangupButton(coordinator, entry))
+    async_add_entities(entities)
 
 
 class _PhoneButton(YealinkEntity, ButtonEntity):
